@@ -200,7 +200,7 @@ def process_dataset(df, tokenizer, answer_available=True, max_len=512):
     proc_df.replace("", float("NaN"), inplace=True)
     proc_df.dropna(inplace=True)
 
-    return tmp
+    return proc_df
     
 def train_test_split_on_title(df, split_val=0.75):
     """
@@ -226,11 +226,16 @@ def train_test_split_on_title(df, split_val=0.75):
     val_x, val_y = dataframe_to_array(df_val)
     return train_x, train_y, val_x, val_y
 
-def dataframe_to_array(df):
+def dataframe_to_array(df, answer_available = True):
     df_list = df.to_dict(orient='list')
     x_set = ["input_ids", "token_type_ids", "attention_mask"]
-    y_set = ["start_token_idx", "end_token_idx"]
-    df_x = [np.array(df_list[x]) for x in x_set]
-    df_y = [np.array(df_list[y]) for y in y_set]
-    return df_x, df_y
+    if answer_available:
+        y_set = ["start_token_idx", "end_token_idx"]
+        df_x = [np.array(df_list[x]) for x in x_set]
+        df_y = [np.array(df_list[y]) for y in y_set]
+        return df_x, df_y
+    else:
+        df_x = [np.array(df_list[x]) for x in x_set]
+        return df_x
+
 
