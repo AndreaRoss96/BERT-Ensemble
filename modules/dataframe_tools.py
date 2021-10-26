@@ -10,7 +10,7 @@ from tensorflow import keras
 from modules.utils import *
 
 
-def print_error(id, question, context, answer, start_idx, end_idx):
+def print_error_train(id, question, context, answer, start_idx, end_idx):
     print("id:\t\t{} \n".format(id))
     print("Question: \t{} \n".format(question))
     print("Paragraph:\t{}\n".format(context))
@@ -19,6 +19,12 @@ def print_error(id, question, context, answer, start_idx, end_idx):
     print("Bounds: {} {} ---- Length: {}\n\n".format(start_idx, end_idx, len(context)))
     print("==============================================================\n\n\n\n")
 
+def print_error_test(id, question, context):
+    print("id:\t\t{} \n".format(id))
+    print("Question: \t{} \n".format(question))
+    print("Paragraph:\t{}\n".format(context))
+    print("==============================================================\n\n")
+
 
 def process_test_record(record, tokenizer, max_len, show_oub = False, show_bast = False, show_no_answ = False ):
     # Here the record has the form: id, title, context, question
@@ -26,13 +32,16 @@ def process_test_record(record, tokenizer, max_len, show_oub = False, show_bast 
     # - record: a single row of the dataset
     # - tokenizer: the specific tokenizer it needs to be utilized
     # Returns:
-    # - [id, input_ids, attention_mask, token_type_ids]: if the computation is successfull
-    # - ["","","",""]: if the computation went wrong
+    # - [id, input_ids, attention_mask, token_type_ids, offset]: if the computation is successfull
+    # - ["","","","", ""]: if the computation went wrong
 
     id = record["id"]
     title = record["title"]
     context = record["context"]
     question = record["question"]
+
+    error_return = ["","","","",""]
+
 
     # Clean context, answer and question from unnecessary whitespaces
     context = " ".join(str(context).split())
@@ -66,18 +75,16 @@ def process_test_record(record, tokenizer, max_len, show_oub = False, show_bast 
         attention_mask = attention_mask + ([0] * padding_length)
         token_type_ids = token_type_ids + ([0] * padding_length)
 
-    elif padding_length < 0:  # TODO: Altro che sliding window, sto stronzo se non ci stanno in BERT le skippa diretto
-        # TODO: Bastardo
+    elif padding_length < 0: 
         if show_bast:
-            print("Invalid question: max_lenght reached")
-            print("id:\t\t{} \n".format(id))
-            print("Question: \t{} \n".format(question))
-            print("Paragraph:\t{}\n".format(context))
-            print("==============================================================\n\n")
 
-        return ["","","",""]
+            print("Invalid question: max_lenght reached")
+            print_error_test(id, question, context)        
+
+        return error_return
 
     return [id, input_ids, attention_mask, token_type_ids]
+
 
 def process_train_record(record, tokenizer, max_len, show_oub = False, show_bast = False, show_no_answ = False ):
     # Here the record has the form: id, title, context, question, answer_text, start_idx
@@ -85,8 +92,8 @@ def process_train_record(record, tokenizer, max_len, show_oub = False, show_bast
     # - record: a single row of the dataset
     # - tokenizer: the specific tokenizer it needs to be utilized
     # Returns:
-    # - ([id, input_ids, attention_mask, token_type_ids, start_token_idx, end_token_idx], offset): if the computation is successfull
-    # - (["","","","","", ""], None): if the computation went wrong
+    # - [id, input_ids, attention_mask, token_type_ids, start_token_idx, end_token_idx, offset]: if the computation is successfull
+    # - ["","","","","","",""]: if the computation went wrong
 
     id = record["id"]
     title = record["title"]
@@ -95,7 +102,7 @@ def process_train_record(record, tokenizer, max_len, show_oub = False, show_bast
     answer = record["answer_text"]
     start_idx = record["start_idx"]
 
-    error_return = (["","","","","","",""], None)
+    error_return = ["","","","","","","",""]
 
 
     # Clean context, answer and question from unnecessary whitespaces
@@ -109,7 +116,7 @@ def process_train_record(record, tokenizer, max_len, show_oub = False, show_bast
     if end_idx > len(context):
         if show_oub:
             print("Invalid question: out of bound answer")
-            print_error(id, question, context, answer, start_idx, end_idx)        
+            print_error_train(id, question, context, answer, start_idx, end_idx)        
         return  error_return
 
     # Mark the character indexes in context that are in answer
@@ -131,7 +138,7 @@ def process_train_record(record, tokenizer, max_len, show_oub = False, show_bast
     if len(ans_token_idx) == 0:
         if show_no_answ:
             print("Invalid question: no answer token")
-            print_error(id, question, context, answer, start_idx, end_idx)        
+            print_error_train(id, question, context, answer, start_idx, end_idx)        
         return error_return
 
     # Find start and end token index for tokens from answer
@@ -158,12 +165,6 @@ def process_train_record(record, tokenizer, max_len, show_oub = False, show_bast
             interval = [max_ctx_space - answer_len - remain_space, max_ctx_space ]
 
     # Create inputs take [CLS] and [SEP] from context
-
-    # Switching to prove something
-    # input_ids = tokenized_question.input_ids + tokenized_context.input_ids[interval[0]:interval[1]] 
-    # token_type_ids = [0] * len(tokenized_question.input_ids) + [1] * len(tokenized_context.input_ids[interval[0]:interval[1]] )
-    # attention_mask = [1] * len(input_ids)
-
   
     input_ids = tokenized_context.input_ids + tokenized_question.input_ids[interval[0]:interval[1]] 
     token_type_ids = [0] * len(tokenized_context.input_ids) + [1] * len(tokenized_question.input_ids[interval[0]:interval[1]] )
@@ -181,25 +182,25 @@ def process_train_record(record, tokenizer, max_len, show_oub = False, show_bast
     elif padding_length < 0:  
         if show_bast:
             print("Contex + answer too long")
-            print_error(id, question, context, answer, start_idx, end_idx)        
+            print_error_train(id, question, context, answer, start_idx, end_idx)        
         return error_return
 
-    return [id, title, input_ids, attention_mask, token_type_ids, start_token_idx, end_token_idx]
+    return [id, title, input_ids, attention_mask, token_type_ids, start_token_idx, end_token_idx, offsets]
 
 def process_dataset(df, tokenizer, answer_available=True, max_len=512):
     if answer_available:
-        tmp = [process_train_record(record, tokenizer, max_len, show_no_answ=True) for _, record in df.iterrows()]    
-        columns = ["id","title", "input_ids", "attention_mask", "token_type_ids", "start_token_idx", "end_token_idx"]
+        tmp = [process_train_record(record, tokenizer, max_len) for _, record in df.iterrows()]    
+        columns = ["id","title", "input_ids", "attention_mask", "token_type_ids", "start_token_idx", "end_token_idx", "offset"]
     else:
         tmp = [process_test_record(record, tokenizer, max_len) for _, record in df.iterrows()]    
-        columns = ["id","title", "input_ids", "attention_mask", "token_type_ids"]
+        columns = ["id","title", "input_ids", "attention_mask", "token_type_ids", "offset"]
 
-    tmp = pd.DataFrame(tmp, columns=columns).set_index(["id"])
+    proc_df = pd.DataFrame(tmp, columns=columns).set_index(["id"])
 
-    tmp.replace("", float("NaN"), inplace=True)
-    tmp.dropna(inplace=True)
+    proc_df.replace("", float("NaN"), inplace=True)
+    proc_df.dropna(inplace=True)
 
-    return tmp, None
+    return tmp
     
 def train_test_split_on_title(df, split_val=0.75):
     """
@@ -223,18 +224,6 @@ def train_test_split_on_title(df, split_val=0.75):
     # creating test and val x,y
     train_x, train_y = dataframe_to_array(df_train)
     val_x, val_y = dataframe_to_array(df_val)
-    '''
-    df_train_list = df_train.to_dict(orient='list')
-    df_val_list = df_val.to_dict(orient='list')
-    x_set = ["input_ids", "token_type_ids", "attention_mask"]
-    y_set = ["start_token_idx", "end_token_idx"]
-
-    train_x = [np.array(df_train_list[x]) for x in x_set]
-    train_y = [np.array(df_train_list[y]) for y in y_set]
-
-    val_x = [np.array(df_val_list[x]) for x in x_set]
-    val_y = [np.array(df_val_list[y]) for y in y_set]
-    '''
     return train_x, train_y, val_x, val_y
 
 def dataframe_to_array(df):
