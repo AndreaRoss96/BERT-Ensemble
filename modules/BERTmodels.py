@@ -43,7 +43,6 @@ def create_bert_CNN(model_name = 'bert-base-uncased', max_len = 512, inputs=[]):
     )
     return model
 
-
 def create_bert_vanilla(model_name = 'bert-base-uncased', max_len = 512, inputs=[]):
     ## BERT encoder
     encoder = TFAutoModel.from_pretrained(model_name)
@@ -69,20 +68,17 @@ def create_bert_vanilla(model_name = 'bert-base-uncased', max_len = 512, inputs=
     )
     return model
 
-
-layer_options = {
-  "concatenate" : layers.Concatenate(),
-  "average" : layers.Average,
-  "maximum" : layers.Maximum,
-  "minimum" : layers.Minimum,
-  "add"     : layers.Add,
-  "subtract": layers.Subtract,
-  "multiply": layers.Multiply,
-}
-
 def create_bert_custom(model_name = 'bert-base-uncased', max_len = 512, custom_layer="regular", dropout=True, inputs=[]):
-  # BERT attention explanation:
-  # https://web.stanford.edu/class/archive/cs/cs224n/cs224n.1194/reports/default/15701585.pdf
+
+  layer_options = {
+    "concatenate" : layers.Concatenate(),
+    "average" : layers.Average,
+    "maximum" : layers.Maximum,
+    "minimum" : layers.Minimum,
+    "add"     : layers.Add,
+    "subtract": layers.Subtract,
+    "multiply": layers.Multiply,
+  }
 
   ## BERT encoder
   encoder = TFAutoModel.from_pretrained(model_name)
@@ -101,15 +97,6 @@ def create_bert_custom(model_name = 'bert-base-uncased', max_len = 512, custom_l
     int_logits = layers.Dropout(0.5, noise_shape=None, seed=None)(int_logits)
   int_logits = layers.Flatten(name = 'flatten_int' + '_' + custom_layer)(int_logits)
 
-  layer_options = {
-    "concatenate" : layers.Concatenate(),
-    "average" : layers.Average,
-    "maximum" : layers.Maximum,
-    "minimum" : layers.Minimum,
-    "add"     : layers.Add,
-    "subtract": layers.Subtract,
-    "multiply": layers.Multiply,
-  }
 
   ####
   if custom_layer.lower() in layer_options:

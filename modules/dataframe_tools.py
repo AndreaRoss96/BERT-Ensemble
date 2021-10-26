@@ -1,0 +1,247 @@
+import warnings
+warnings.filterwarnings('ignore')
+import os
+import re
+import numpy as np
+import tensorflow as tf
+import pandas as pd
+from tensorflow import keras
+#from transformers import AutoTokenizer, TFAutoModel
+from modules.utils import *
+
+
+def print_error(id, question, context, answer, start_idx, end_idx):
+    print("id:\t\t{} \n".format(id))
+    print("Question: \t{} \n".format(question))
+    print("Paragraph:\t{}\n".format(context))
+    print("True Answer:\t{}".format(answer))
+    print("Possib Answer:\t{}".format(context[start_idx:end_idx]))
+    print("Bounds: {} {} ---- Length: {}\n\n".format(start_idx, end_idx, len(context)))
+    print("==============================================================\n\n\n\n")
+
+
+def process_test_record(record, tokenizer, max_len, show_oub = False, show_bast = False, show_no_answ = False ):
+    # Here the record has the form: id, title, context, question
+    # Params:
+    # - record: a single row of the dataset
+    # - tokenizer: the specific tokenizer it needs to be utilized
+    # Returns:
+    # - [id, input_ids, attention_mask, token_type_ids]: if the computation is successfull
+    # - ["","","",""]: if the computation went wrong
+
+    id = record["id"]
+    title = record["title"]
+    context = record["context"]
+    question = record["question"]
+
+    # Clean context, answer and question from unnecessary whitespaces
+    context = " ".join(str(context).split())
+    question = " ".join(str(question).split())
+
+    # Tokenize context and question
+    tokenized_context = tokenizer(context, return_offsets_mapping=True)
+    tokenized_question = tokenizer(question, return_offsets_mapping=True)
+
+    # Find start and end token index for tokens from answer
+    max_ctx_space = max_len - len(tokenized_question.input_ids)
+    interval = [1,max_ctx_space]
+
+    # change questions where input_ids would be > max_len
+    if max_len - len(tokenized_question.input_ids) - len(tokenized_context.input_ids) < 0:
+        # truncate the context at max_ctx_space
+        interval = [1, max_ctx_space]
+
+
+    # Create inputs take [CLS] and [SEP] from question
+    input_ids = tokenized_question.input_ids + tokenized_context.input_ids[interval[0]:interval[1]] 
+    token_type_ids = [0] * len(tokenized_question.input_ids) + [1] * len(tokenized_context.input_ids[interval[0]:interval[1]] )
+    attention_mask = [1] * len(input_ids)
+
+    
+    # Pad and create attention masks.
+    # Skip if truncation is needed
+    padding_length = max_len - len(input_ids)
+    if padding_length > 0:  # pad
+        input_ids = input_ids + ([0] * padding_length)
+        attention_mask = attention_mask + ([0] * padding_length)
+        token_type_ids = token_type_ids + ([0] * padding_length)
+
+    elif padding_length < 0:  # TODO: Altro che sliding window, sto stronzo se non ci stanno in BERT le skippa diretto
+        # TODO: Bastardo
+        if show_bast:
+            print("Invalid question: max_lenght reached")
+            print("id:\t\t{} \n".format(id))
+            print("Question: \t{} \n".format(question))
+            print("Paragraph:\t{}\n".format(context))
+            print("==============================================================\n\n")
+
+        return ["","","",""]
+
+    return [id, input_ids, attention_mask, token_type_ids]
+
+def process_train_record(record, tokenizer, max_len, show_oub = False, show_bast = False, show_no_answ = False ):
+    # Here the record has the form: id, title, context, question, answer_text, start_idx
+    # Params:
+    # - record: a single row of the dataset
+    # - tokenizer: the specific tokenizer it needs to be utilized
+    # Returns:
+    # - ([id, input_ids, attention_mask, token_type_ids, start_token_idx, end_token_idx], offset): if the computation is successfull
+    # - (["","","","","", ""], None): if the computation went wrong
+
+    id = record["id"]
+    title = record["title"]
+    context = record["context"]
+    question = record["question"]
+    answer = record["answer_text"]
+    start_idx = record["start_idx"]
+
+    error_return = (["","","","","","",""], None)
+
+
+    # Clean context, answer and question from unnecessary whitespaces
+    context = " ".join(str(context).split())
+    question = " ".join(str(question).split())
+    answer = " ".join(str(answer).split())
+
+    # Find end character index of answer in context
+    end_idx = start_idx + len(answer)
+    # Find errors in the dataset
+    if end_idx > len(context):
+        if show_oub:
+            print("Invalid question: out of bound answer")
+            print_error(id, question, context, answer, start_idx, end_idx)        
+        return  error_return
+
+    # Mark the character indexes in context that are in answer
+    is_char_in_ans = [0] * len(context)
+    for idx in range(start_idx, end_idx):
+        is_char_in_ans[idx] = 1
+
+    # Tokenize context and question
+    tokenized_context = tokenizer(context, return_offsets_mapping=True)
+    tokenized_question = tokenizer(question, return_offsets_mapping=True)
+
+    # Find tokens that were created from answer characters
+    offsets = tokenized_context.offset_mapping
+    ans_token_idx = []
+    for idx, (start, end) in enumerate(offsets):
+        if sum(is_char_in_ans[start:end]) > 0:
+            ans_token_idx.append(idx)
+
+    if len(ans_token_idx) == 0:
+        if show_no_answ:
+            print("Invalid question: no answer token")
+            print_error(id, question, context, answer, start_idx, end_idx)        
+        return error_return
+
+    # Find start and end token index for tokens from answer
+    start_token_idx = ans_token_idx[0]
+    end_token_idx = ans_token_idx[-1]
+    max_ctx_space = max_len - len(tokenized_question.input_ids)
+    interval = [1,max_ctx_space]
+
+    # change questions where input_ids would be > max_len
+    if max_len - len(tokenized_question.input_ids) - len(tokenized_context.input_ids) < 0:
+
+        # Consider only the context part that has more influence on the answer 
+        answer_len = end_token_idx - start_token_idx
+        remain_space = max_len - len(tokenized_question.input_ids) - answer_len
+        interval = [start_token_idx - remain_space/2, end_token_idx + remain_space/2]
+
+        # if the proposed interval is out of bound wrt the context, the interval is
+        # changed accordingly
+        
+        # Note that the two if statement cannot be true at the same time
+        if start_token_idx - remain_space/2 < 0:
+            interval = [1, end_token_idx + remain_space - start_token_idx]
+        if start_token_idx + remain_space/2 > max_ctx_space :
+            interval = [max_ctx_space - answer_len - remain_space, max_ctx_space ]
+
+    # Create inputs take [CLS] and [SEP] from context
+
+    # Switching to prove something
+    # input_ids = tokenized_question.input_ids + tokenized_context.input_ids[interval[0]:interval[1]] 
+    # token_type_ids = [0] * len(tokenized_question.input_ids) + [1] * len(tokenized_context.input_ids[interval[0]:interval[1]] )
+    # attention_mask = [1] * len(input_ids)
+
+  
+    input_ids = tokenized_context.input_ids + tokenized_question.input_ids[interval[0]:interval[1]] 
+    token_type_ids = [0] * len(tokenized_context.input_ids) + [1] * len(tokenized_question.input_ids[interval[0]:interval[1]] )
+    attention_mask = [1] * len(input_ids)
+
+    
+    # Pad and create attention masks.
+    # Skip if truncation is needed
+    padding_length = max_len - len(input_ids)
+    if padding_length > 0:  # pad
+        input_ids = input_ids + ([0] * padding_length)
+        attention_mask = attention_mask + ([0] * padding_length)
+        token_type_ids = token_type_ids + ([0] * padding_length)
+
+    elif padding_length < 0:  
+        if show_bast:
+            print("Contex + answer too long")
+            print_error(id, question, context, answer, start_idx, end_idx)        
+        return error_return
+
+    return [id, title, input_ids, attention_mask, token_type_ids, start_token_idx, end_token_idx]
+
+def process_dataset(df, tokenizer, answer_available=True, max_len=512):
+    if answer_available:
+        tmp = [process_train_record(record, tokenizer, max_len, show_no_answ=True) for _, record in df.iterrows()]    
+        columns = ["id","title", "input_ids", "attention_mask", "token_type_ids", "start_token_idx", "end_token_idx"]
+    else:
+        tmp = [process_test_record(record, tokenizer, max_len) for _, record in df.iterrows()]    
+        columns = ["id","title", "input_ids", "attention_mask", "token_type_ids"]
+
+    tmp = pd.DataFrame(tmp, columns=columns).set_index(["id"])
+
+    tmp.replace("", float("NaN"), inplace=True)
+    tmp.dropna(inplace=True)
+
+    return tmp, None
+    
+def train_test_split_on_title(df, split_val=0.75):
+    """
+    From the process dataset the function splits it into train and validation, wrt title.
+
+    And then prepares these dataset for the model fit functions
+
+    Return:
+     - train_x  <-- "input_ids", "token_type_ids", "attention_mask"
+     - train_y  <-- "start_token_idx", "end_token_idx"
+     - val_x    <-- "input_ids", "token_type_ids", "attention_mask"
+     - val_y    <-- "start_token_idx", "end_token_idx"
+    """
+    r_df = df.reset_index()
+
+    #split based on the title
+    split_title = r_df['title'].iloc[int(split_val * len(r_df)) - 1]
+    split_index = r_df[r_df['title'] == split_title].index.min()
+    df_train, df_val = r_df.iloc[:split_index], r_df.iloc[split_index:]
+
+    # creating test and val x,y
+    train_x, train_y = dataframe_to_array(df_train)
+    val_x, val_y = dataframe_to_array(df_val)
+    '''
+    df_train_list = df_train.to_dict(orient='list')
+    df_val_list = df_val.to_dict(orient='list')
+    x_set = ["input_ids", "token_type_ids", "attention_mask"]
+    y_set = ["start_token_idx", "end_token_idx"]
+
+    train_x = [np.array(df_train_list[x]) for x in x_set]
+    train_y = [np.array(df_train_list[y]) for y in y_set]
+
+    val_x = [np.array(df_val_list[x]) for x in x_set]
+    val_y = [np.array(df_val_list[y]) for y in y_set]
+    '''
+    return train_x, train_y, val_x, val_y
+
+def dataframe_to_array(df):
+    df_list = df.to_dict(orient='list')
+    x_set = ["input_ids", "token_type_ids", "attention_mask"]
+    y_set = ["start_token_idx", "end_token_idx"]
+    df_x = [np.array(df_list[x]) for x in x_set]
+    df_y = [np.array(df_list[y]) for y in y_set]
+    return df_x, df_y
+
