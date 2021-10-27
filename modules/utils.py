@@ -14,8 +14,11 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from modules.dataframe_tools import *
 
 
-def create_df(json_txt, errors):
+def create_df(path_to_json, errors):
     # Parse the Json File and create a DataFrame with "title" - "context" - "question" - "id" - "answer_text" - "idx_start"
+    with open(path_to_json) as f:
+        json_txt = json.load(f)
+
     processed = []
     for item in json_txt["data"]:
         title = item["title"]
@@ -64,14 +67,6 @@ def get_errors(path = "/content/drive/MyDrive/NLP/proj finale/utils/errors.txt")
     return [el.strip() for el in e]
 
 def index_to_text(record):
-    '''
-    param: 
-    - a dataframe row or an equivalent dictionary that contains the following columns:
-            "pred_start"
-            "pred_end"
-            "context"
-            "offsets"
-    '''
     start_token = record["pred_start"]
     end_token = record["pred_end"]
     context = record["context"]
@@ -80,4 +75,13 @@ def index_to_text(record):
     end_char = offsets[end_token][1]
     return context[start_char:end_char]
 
+def write_prediction(df, output_file):
+    d = {}
+    for i, row in df.iterrows():
+        d[i] = index_to_text(row)
+    
+    f = open(output_file, "w")
+    json.dump(d, f)
+    f.close()
+    
 

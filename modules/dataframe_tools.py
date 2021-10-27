@@ -191,10 +191,10 @@ def process_train_record(record, tokenizer, max_len, show_oub = False, show_bast
 def process_dataset(df, tokenizer, answer_available=True, max_len=512):
     if answer_available:
         tmp = [process_train_record(record, tokenizer, max_len) for _, record in df.iterrows()]    
-        columns = ["id","title", "input_ids", "attention_mask", "token_type_ids", "start_token_idx", "end_token_idx", "offset"]
+        columns = ["id","title", "input_ids", "attention_mask", "token_type_ids", "start_token_idx", "end_token_idx", "offsets"]
     else:
         tmp = [process_test_record(record, tokenizer, max_len) for _, record in df.iterrows()]    
-        columns = ["id","title", "input_ids", "attention_mask", "token_type_ids", "offset"]
+        columns = ["id","title", "input_ids", "attention_mask", "token_type_ids", "offsets"]
 
     proc_df = pd.DataFrame(tmp, columns=columns).set_index(["id"])
 

@@ -11,6 +11,7 @@ Pipfile*
 test.json
 dataset/
 saved_models/*
+output_*
 
 # Distribution / packaging
 .Python

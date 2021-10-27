@@ -1,5 +1,6 @@
 import argparse
 import json
+from typing import DefaultDict
 import tensorflow as tf
 import pandas as pd
 from tensorflow.keras import layers
@@ -61,8 +62,8 @@ if __name__ == '__main__':
     parser.add_argument('--mul_layer',          default='true', type=str, help='use an BERT model with a mul layer for the ensemble')
     parser.add_argument('--sub_layer',          default='true', type=str, help='use an BERT model with a sub layer for the ensemble')
     parser.add_argument('--saved_model_path',   default='saved_models/', type=str, help='path with the models weight saved')
+    parser.add_argument('--output_json',        default='output_0.json', type= str, help='Folder with the predicted values')
 
-    print("\nparsing the values ...\n")
     args = parser.parse_args()
     path_to_json = args.path_to_json
     max_len = args.max_len
@@ -70,11 +71,8 @@ if __name__ == '__main__':
 
     tokenizer = AutoTokenizer.from_pretrained(args.bert_model)
 
-    # Create Data set for testing
-    with open(path_to_json) as f:
-        raw_test_data = json.load(f)
-    
-    df_orig = create_df(raw_test_data, [])
+    # Create Data set for testing    
+    df_orig = create_df(path_to_json, [])
 
     #TODO remove this vvvv
     df_orig = df_orig[:10] # <<
@@ -123,14 +121,17 @@ if __name__ == '__main__':
     print()  
 
     data = {
+        "id" : df_orig.id.values,
         "pred_start":pred[0],
         "pred_end": pred[1],
         "input_ids": df["input_ids"],
-        "offset": df["offset"]}
+        "context" : df_orig["context"].values,
+        "offsets": df["offsets"].values}
 
     df_res = pd.DataFrame.from_dict(data)
+    df_res.set_index("id", inplace=True)
 
-    write_prediction(df_res)
+    write_prediction(df_res, args.output_json)
     
 
 
