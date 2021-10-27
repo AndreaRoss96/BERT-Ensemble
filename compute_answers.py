@@ -9,6 +9,8 @@ from modules.dataframe_tools import *
 from modules.utils import *
 from modules.BERTmodels import *
 
+import time
+
 def get_models(add_layer, avg_layer, max_layer, min_layer, mul_layer, sub_layer, max_len, saved_models_path, inputs):
     bert_cnn = create_bert_CNN(inputs=inputs)
     bert_cnn.load_weights(saved_models_path + "BERT_1DConv.hdf5")
@@ -21,23 +23,23 @@ def get_models(add_layer, avg_layer, max_layer, min_layer, mul_layer, sub_layer,
         models.append(bert_add)
     if str(avg_layer).lower() =='true':
         bert_avg = create_bert_custom(custom_layer="average", inputs=inputs)
-        bert_avg.load_weights(saved_models_path + "bert-base-uncased_avg.hdf5")
+        bert_avg.load_weights(saved_models_path + "bert-base-uncased_average.hdf5")
         models.append(bert_avg)
     if str(max_layer).lower() =='true':
         bert_max = create_bert_custom(custom_layer="maximum", inputs=inputs)
-        bert_max.load_weights(saved_models_path + "bert-base-uncased_max.hdf5")
+        bert_max.load_weights(saved_models_path + "bert-base-uncased_maximum.hdf5")
         models.append(bert_max)
     if str(min_layer).lower() =='true':
         bert_min = create_bert_custom(custom_layer="minimum", inputs=inputs)
-        bert_min.load_weights(saved_models_path + "bert-base-uncased_min.hdf5")
+        bert_min.load_weights(saved_models_path + "bert-base-uncased_minimum.hdf5")
         models.append(bert_min)
     if str(mul_layer).lower() =='true':
         bert_mul = create_bert_custom(custom_layer="multiply", inputs=inputs)
-        bert_mul.load_weights(saved_models_path + "bert-base-uncased_mul.hdf5")
+        bert_mul.load_weights(saved_models_path + "bert-base-uncased_multiply.hdf5")
         models.append(bert_mul)
     if str(sub_layer).lower() =='true':
         bert_sub = create_bert_custom(custom_layer="subtract", inputs=inputs)
-        bert_sub.load_weights(saved_models_path + "bert-base-uncased_sub.hdf5")
+        bert_sub.load_weights(saved_models_path + "bert-base-uncased_subtract.hdf5")
         models.append(bert_sub)
 
     return models
@@ -60,6 +62,7 @@ if __name__ == '__main__':
     parser.add_argument('--sub_layer',          default='true', type=str, help='use an BERT model with a sub layer for the ensemble')
     parser.add_argument('--saved_model_path',   default='saved_models/', type=str, help='path with the models weight saved')
 
+    print("\nparsing the values ...\n")
     args = parser.parse_args()
     path_to_json = args.path_to_json
     max_len = args.max_len
@@ -80,7 +83,6 @@ if __name__ == '__main__':
     df = process_dataset(df_orig, tokenizer, answer_available=False, max_len=max_len)
     x_test = dataframe_to_array(df, answer_available = False)
     print("\nProceding to create models ...\n")
-    raise()
 
     # Create input layer for the neural networks
     input_ids = layers.Input(shape=(max_len,), dtype=tf.int32, name="input_ids")
@@ -113,7 +115,12 @@ if __name__ == '__main__':
     else :
         raise ValueError("Check \'--model\' value: use \'endemble\' or \'vanilla\'")
     
+    print("\nPrediction in process ...\n")
+    t0 = time.time() 
     pred = model.predict(x_test)
+    t1 = time.time()
+    print(f"the prediction process took {t1-t0} seconds")  
+    print()  
 
     data = {
         "pred_start":pred[0],

@@ -100,7 +100,7 @@ def create_bert_custom(model_name = 'bert-base-uncased', max_len = 512, custom_l
 
   ####
   if custom_layer.lower() in layer_options:
-    end_logits = layer_options[custom_layer.lower()]([start_logits, int_logits])
+    end_logits = layer_options[custom_layer.lower()]()([start_logits, int_logits])
   else:
     end_logits = int_logits
   ####
