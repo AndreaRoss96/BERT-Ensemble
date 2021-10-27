@@ -111,7 +111,7 @@ if __name__ == '__main__':
     elif args.model == 'vanilla' : 
         model = bert_van
     else :
-        raise ValueError("Check \'--model\' value: use \'endemble\' or \'vanilla\'")
+        raise ValueError("Check \'--model\' value: use \'ensemble\' or \'vanilla\'")
     
     print("\nPrediction in process ...\n")
     t0 = time.time() 
@@ -134,7 +134,7 @@ if __name__ == '__main__':
     df_res = pd.DataFrame.from_dict(data)
     df_res.set_index("id", inplace=True)
 
-    d= []
+    d= {}
     for i, row in df_res.iterrows():
         d[i] =  index_to_text(row)
         print_prediction(i, row, row["question"], row["true_answer"])
