@@ -38,28 +38,21 @@ def create_df(path_to_json, errors):
     df = pd.DataFrame(processed, columns=columns)
     return df
 
-def print_prediction(p, df_orig):
+def print_prediction(id, record, question, true_answer):
     # TODO: check if the next line is still needed
-    first_idx = df_orig.first_valid_index()
-    for i, row in enumerate(zip(p[0],p[1])):
 
-        start = row[0]
-        end = row[1]
-        id = df_orig["id"][i+first_idx]
-        context = df_orig["context"][i+first_idx]
-        question = df_orig["question"][i+first_idx]
-        answer = df_orig["answer_text"][i+first_idx]
-        start_true = df["start_token_idx"][i]
-        end_true = df["end_token_idx"][i]
+    start = record["pred_start"]
+    end = record["pred_end"]
+    context = record["context"]
 
-        print("id:\t\t{} \n".format(id))
-        print("Question: \t{} \n".format(question))
-        print("Paragraph:\t{}\n".format(context))
-        print("True Answer:\t{}".format(answer))
-        print("True Answer brutta:\t{}".format(tokenizer.convert_ids_to_tokens(x[0][i][start_true: end_true+1])))
-        print("Possib Answer:\t{}".format(tokenizer.convert_ids_to_tokens(x[0][i][start: end+1])))
-        print("Start: {}, \t end: {}".format(start, end))
-        print("==============================================================\n\n")
+    print("id:\t\t{} \n".format(id))
+    print("Question: \t{} \n".format(question))
+    print("Paragraph:\t{}\n".format(context))
+    print("True Answer:\t{}".format(true_answer))
+    print("Possib Answer:\t{}".format(index_to_text(record)))
+    print("Start: {}, \t end: {}".format(start, end))
+    print("==============================================================\n\n")
+
 
 def get_errors(path = "/content/drive/MyDrive/NLP/proj finale/utils/errors.txt"):
     with open(path, "r") as err:

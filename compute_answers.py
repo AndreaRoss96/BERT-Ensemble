@@ -126,10 +126,19 @@ if __name__ == '__main__':
         "pred_end": pred[1],
         "input_ids": df["input_ids"],
         "context" : df_orig["context"].values,
-        "offsets": df["offsets"].values}
+        "offsets": df["offsets"].values,
+        "true_answer": df_orig["answer_text"].values,
+        "question": df_orig["question"].values
+    }
 
     df_res = pd.DataFrame.from_dict(data)
     df_res.set_index("id", inplace=True)
+
+    d= []
+    for i, row in df_res.iterrows():
+        d[i] =  index_to_text(row)
+        print_prediction(i, row, row["question"], row["true_answer"])
+    print(d)
 
     write_prediction(df_res, args.output_json)
     
