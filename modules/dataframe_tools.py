@@ -50,6 +50,7 @@ def process_test_record(record, tokenizer, max_len, show_oub = False, show_bast 
     # Tokenize context and question
     tokenized_context = tokenizer(context, return_offsets_mapping=True)
     tokenized_question = tokenizer(question, return_offsets_mapping=True)
+    offsets = tokenized_context.offset_mapping
 
     # Find start and end token index for tokens from answer
     max_ctx_space = max_len - len(tokenized_question.input_ids)
@@ -83,7 +84,7 @@ def process_test_record(record, tokenizer, max_len, show_oub = False, show_bast 
 
         return error_return
 
-    return [id, input_ids, attention_mask, token_type_ids]
+    return [id, title, input_ids, attention_mask, token_type_ids, offsets]
 
 
 def process_train_record(record, tokenizer, max_len, show_oub = False, show_bast = False, show_no_answ = False ):
