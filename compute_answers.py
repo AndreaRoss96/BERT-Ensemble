@@ -1,17 +1,10 @@
 import argparse
-import os
-import re
 import json
-import string
-import numpy as np
 import tensorflow as tf
 import pandas as pd
-from tensorflow import keras
 from tensorflow.keras import layers
-from transformers import AutoTokenizer, TFAutoModel
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from transformers import AutoTokenizer
 
-from keras.models import load_model
 from modules.dataframe_tools import *
 from modules.utils import *
 from modules.BERTmodels import *
@@ -55,17 +48,17 @@ if __name__ == '__main__':
             the training set, creates a prediction  \
             file in the desired format.'
     )
-    parser.add_argument('path_to_json', metavar='data.json', help='Path to json testing file')
-    parser.add_argument('--model',      default='ensemble', type= str, help='type of model you want to use to compute the answers: [ensemble, vanilla]')
-    parser.add_argument('--bert_model', default='bert-base-uncased', type=str, help='BERT tokenizer model')
-    parser.add_argument('--max_len',    default=512, type=int, help='maximum len for the BERT tokenizer model')
-    parser.add_argument('--add_layer',  default='true', type=str, help='use an BERT model with an add layer for the ensemble')
-    parser.add_argument('--avg_layer',  default='true', type=str, help='use an BERT model with an avg layer for the ensemble')
-    parser.add_argument('--max_layer',  default='true', type=str, help='use an BERT model with a max layer for the ensemble')
-    parser.add_argument('--min_layer',  default='true', type=str, help='use an BERT model with a min layer for the ensemble')
-    parser.add_argument('--mul_layer',  default='true', type=str, help='use an BERT model with a mul layer for the ensemble')
-    parser.add_argument('--sub_layer',  default='true', type=str, help='use an BERT model with a sub layer for the ensemble')
-    parser.add_argument('--saved_model_path', default='saved/', type=str, help='path with the models weight saved')
+    parser.add_argument('path_to_json',         metavar='data.json', help='Path to json testing file')
+    parser.add_argument('--model',              default='ensemble', type= str, help='type of model you want to use to compute the answers: [ensemble, vanilla]')
+    parser.add_argument('--bert_model',         default='bert-base-uncased', type=str, help='BERT tokenizer model')
+    parser.add_argument('--max_len',            default=512,    type=int, help='maximum len for the BERT tokenizer model')
+    parser.add_argument('--add_layer',          default='true', type=str, help='use an BERT model with an add layer for the ensemble')
+    parser.add_argument('--avg_layer',          default='true', type=str, help='use an BERT model with an avg layer for the ensemble')
+    parser.add_argument('--max_layer',          default='true', type=str, help='use an BERT model with a max layer for the ensemble')
+    parser.add_argument('--min_layer',          default='true', type=str, help='use an BERT model with a min layer for the ensemble')
+    parser.add_argument('--mul_layer',          default='true', type=str, help='use an BERT model with a mul layer for the ensemble')
+    parser.add_argument('--sub_layer',          default='true', type=str, help='use an BERT model with a sub layer for the ensemble')
+    parser.add_argument('--saved_model_path',   default='saved_models/', type=str, help='path with the models weight saved')
 
     args = parser.parse_args()
     path_to_json = args.path_to_json
@@ -74,24 +67,34 @@ if __name__ == '__main__':
 
     tokenizer = AutoTokenizer.from_pretrained(args.bert_model)
 
+    # Create Data set for testing
     with open(path_to_json) as f:
         raw_test_data = json.load(f)
     
     df_orig = create_df(raw_test_data, [])
 
+    #TODO remove this vvvv
+    df_orig = df_orig[:10] # <<
+    #TODO ^^^^^^^^^^^^^^^^
+    print("\nProcessing dataset ...\n")
     df = process_dataset(df_orig, tokenizer, answer_available=False, max_len=max_len)
     x_test = dataframe_to_array(df, answer_available = False)
+    print("\nProceding to create models ...\n")
+    raise()
 
+    # Create input layer for the neural networks
     input_ids = layers.Input(shape=(max_len,), dtype=tf.int32, name="input_ids")
     token_type_ids = layers.Input(shape=(max_len,), dtype=tf.int32, name="token_type_ids")
     attention_mask = layers.Input(shape=(max_len,), dtype=tf.int32, name="attention_mask")
 
     inputs = [input_ids, token_type_ids, attention_mask]
 
+    # Create vanilla Bert model
     bert_van = create_bert_vanilla(inputs=inputs)
     bert_van.load_weights(saved_models_path + "BERT_Vanilla.hdf5")
 
     if args.model == 'ensemble' :
+        # if ensemble selected (default) --> create enemble model adding vanilla bert model
         models = get_models(
             args.add_layer,
             args.avg_layer,
