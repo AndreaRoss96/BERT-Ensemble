@@ -33,14 +33,14 @@ def process_test_record(record, tokenizer, max_len, show_oub = False, show_bast 
     # - tokenizer: the specific tokenizer it needs to be utilized
     # Returns:
     # - [id, input_ids, attention_mask, token_type_ids, offset]: if the computation is successfull
-    # - ["","","","", ""]: if the computation went wrong
+    # - ["","","","","",""]: if the computation went wrong
 
     id = record["id"]
     title = record["title"]
     context = record["context"]
     question = record["question"]
 
-    error_return = ["","","","",""]
+    error_return = ["","","","","",""]
 
 
     # Clean context, answer and question from unnecessary whitespaces
