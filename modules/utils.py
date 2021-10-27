@@ -63,3 +63,21 @@ def get_errors(path = "/content/drive/MyDrive/NLP/proj finale/utils/errors.txt")
         e = err.readlines()
     return [el.strip() for el in e]
 
+def index_to_text(record):
+    '''
+    param: 
+    - a dataframe row or an equivalent dictionary that contains the following columns:
+            "pred_start"
+            "pred_end"
+            "context"
+            "offsets"
+    '''
+    start_token = record["pred_start"]
+    end_token = record["pred_end"]
+    context = record["context"]
+    offsets = record["offsets"]
+    start_char = offsets[start_token][0]
+    end_char = offsets[end_token][1]
+    return context[start_char:end_char]
+
+
