@@ -122,9 +122,7 @@ class EnsembleModel:
     outputs = [model.outputs[1] for model in models]
     self.end_probs = layers.Average()(outputs)
 
-    # inputs = [input for model in models for input in model.inputs]
     self.input_len = len(models)
-    # inputs=[input_ids, token_type_ids, attention_mask]
     self.ensemble_model = keras.Model(
         inputs = inputs,
         outputs=[self.start_probs, self.end_probs],

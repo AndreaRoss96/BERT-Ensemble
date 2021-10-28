@@ -12,6 +12,7 @@ test.json
 dataset/
 saved_models/*
 output_*
+requirements*
 
 # Distribution / packaging
 .Python

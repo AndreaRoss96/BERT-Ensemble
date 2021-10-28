@@ -1,6 +1,4 @@
 import argparse
-import json
-from typing import DefaultDict
 import tensorflow as tf
 import pandas as pd
 from tensorflow.keras import layers
@@ -113,13 +111,15 @@ if __name__ == '__main__':
     else :
         raise ValueError("Check \'--model\' value: use \'ensemble\' or \'vanilla\'")
     
+    print(x_test)
     print("\nPrediction in process ...\n")
     t0 = time.time() 
     pred = model.predict(x_test)
     t1 = time.time()
-    print(f"the prediction process took {t1-t0} seconds")  
-    print()  
+    print(f"the prediction process took {t1-t0} seconds\n")  
 
+    print(f"the predictions are:\n {pred[0]}\n {pred[1]}")
+    
     data = {
         "id" : df_orig.id.values,
         "pred_start":pred[0],
@@ -137,7 +137,7 @@ if __name__ == '__main__':
     d= {}
     for i, row in df_res.iterrows():
         d[i] =  index_to_text(row)
-        print_prediction(i, row, row["question"], row["true_answer"])
+        #print_prediction(i, row, row["question"], row["true_answer"])
     print(d)
 
     write_prediction(df_res, args.output_json)
