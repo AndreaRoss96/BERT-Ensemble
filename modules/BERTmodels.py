@@ -1,20 +1,23 @@
 import warnings
 warnings.filterwarnings('ignore')
-import os
-import re
-import json
-import string
 import numpy as np
 import tensorflow as tf
-import pandas as pd
 from tensorflow import keras
 from tensorflow.keras import layers
-from transformers import AutoTokenizer, TFAutoModel
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
-
-from keras.models import load_model
+from transformers import TFAutoModel
 
 
+
+def pred_argmax(prediction):
+    """
+    prediction : touple of lists
+    """
+    starts = []
+    ends = []
+    for start_preds, end_preds in zip(prediction[0],prediction[1]):
+      starts.append(np.argmax(start_preds))
+      ends.append(np.argmax(end_preds))
+    return [np.array(starts),np.array(ends)]
 
 def create_bert_CNN(model_name = 'bert-base-uncased', max_len = 512, inputs=[]):
     ## BERT encoder
@@ -135,15 +138,10 @@ class EnsembleModel:
     '''
     Now returns a List of pairs with the structure [[start, stop], [..], ..]
     '''
-    starts = []
-    ends = []
     pred = self.ensemble_model.predict(x_pred)
-    # for i in range(len(pred[0])):
-    #     answer.append([np.argmax(pred[0][i]),np.argmax(pred[1][i])])
-    for start_preds, end_preds in zip(pred[0],pred[1]):
-      starts.append(np.argmax(start_preds))
-      ends.append(np.argmax(end_preds))
-    return [np.array(starts),np.array(ends)]
+
+    return pred_argmax(pred)
+
 
   def plot_model(self, dpi = 55, show_shapes=True):
     return tf.keras.utils.plot_model(self.ensemble_model, dpi=dpi, show_shapes=show_shapes)

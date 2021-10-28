@@ -63,7 +63,7 @@ def process_test_record(record, tokenizer, max_len, show_oub = False, show_bast 
 
 
     # Create inputs take [CLS] and [SEP] from question
-    input_ids = tokenized_question.input_ids + tokenized_context.input_ids[interval[0]:interval[1]] 
+    input_ids = tokenized_context.input_ids + tokenized_question.input_ids[interval[0]:interval[1]] 
     token_type_ids = [0] * len(tokenized_question.input_ids) + [1] * len(tokenized_context.input_ids[interval[0]:interval[1]] )
     attention_mask = [1] * len(input_ids)
 

@@ -76,5 +76,3 @@ def write_prediction(df, output_file):
     f = open(output_file, "w")
     json.dump(d, f)
     f.close()
-    
-
