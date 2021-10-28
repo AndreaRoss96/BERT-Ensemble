@@ -11,6 +11,16 @@ from modules.utils import *
 
 
 def print_error_train(id, question, context, answer, start_idx, end_idx):
+    '''
+    Generic error print for a train dataset
+    params:
+    - id: record id.
+    - question:     record's question.
+    - context:      record's context.
+    - answer:       record's answer.
+    - start_idx:    computed start index of true answer.
+    - end_idx:      computed end index of true answer.
+    '''
     print("id:\t\t{} \n".format(id))
     print("Question: \t{} \n".format(question))
     print("Paragraph:\t{}\n".format(context))
@@ -20,21 +30,32 @@ def print_error_train(id, question, context, answer, start_idx, end_idx):
     print("==============================================================\n\n\n\n")
 
 def print_error_test(id, question, context):
+    """
+    Generic error print for a test dataset
+    params:
+    - id: record id.
+    - question:     record's question.
+    - context:      record's context.
+    """
     print("id:\t\t{} \n".format(id))
     print("Question: \t{} \n".format(question))
     print("Paragraph:\t{}\n".format(context))
     print("==============================================================\n\n")
 
 
-def process_test_record(record, tokenizer, max_len, show_oub = False, show_bast = False, show_no_answ = False ):
-    # Here the record has the form: id, title, context, question
-    # Params:
-    # - record: a single row of the dataset
-    # - tokenizer: the specific tokenizer it needs to be utilized
-    # Returns:
-    # - [id, input_ids, attention_mask, token_type_ids, offset]: if the computation is successfull
-    # - ["","","","","",""]: if the computation went wrong
-
+def process_test_record(record, tokenizer, max_len = 512, show_bast = False ):
+    '''
+    This function tokenizes the train record (without answers) and returns a list with the information needed for a Bert model.
+    
+    Params:
+    - record:       a single row of the dataset. Here the record has the form: id, title, context, question
+    - tokenizer:    the specific tokenizer it needs to be utilized
+    - max_len:      maximum length accepted by the BERT model.
+    - show_bast:    debugging option, shows when computed data are longer than max_len
+    Returns:
+    - [id, input_ids, attention_mask, token_type_ids, offset]: if the computation is successfull
+    - ["","","","","",""]: if the computation went wrong
+    '''
     id = record["id"]
     title = record["title"]
     context = record["context"]
@@ -63,7 +84,7 @@ def process_test_record(record, tokenizer, max_len, show_oub = False, show_bast 
 
 
     # Create inputs take [CLS] and [SEP] from question
-    input_ids = tokenized_context.input_ids + tokenized_question.input_ids[interval[0]:interval[1]] 
+    input_ids = tokenized_question.input_ids + tokenized_context.input_ids[interval[0]:interval[1]] 
     token_type_ids = [0] * len(tokenized_question.input_ids) + [1] * len(tokenized_context.input_ids[interval[0]:interval[1]] )
     attention_mask = [1] * len(input_ids)
 
@@ -87,15 +108,20 @@ def process_test_record(record, tokenizer, max_len, show_oub = False, show_bast 
     return [id, title, input_ids, attention_mask, token_type_ids, offsets]
 
 
-def process_train_record(record, tokenizer, max_len, show_oub = False, show_bast = False, show_no_answ = False ):
-    # Here the record has the form: id, title, context, question, answer_text, start_idx
-    # Params:
-    # - record: a single row of the dataset
-    # - tokenizer: the specific tokenizer it needs to be utilized
-    # Returns:
-    # - [id, input_ids, attention_mask, token_type_ids, start_token_idx, end_token_idx, offset]: if the computation is successfull
-    # - ["","","","","","",""]: if the computation went wrong
-
+def process_train_record(record, tokenizer, max_len = 512, show_oub = False, show_bast = False, show_no_answ = False ):
+    '''
+    This function tokenizes the train record (complete with answers) and returns a list with the information needed for a Bert model.
+    Params:
+    - record:           a single row of the dataset. Here the record has the form: id, title, context, question, answer_text, start_idx
+    - tokenizer:        the specific tokenizer it needs to be utilized
+    - max_len:          maximum length accepted by the BERT model.
+    - show_oub:         debugging option, shows when true answer is out of bound wrt the context
+    - show_bast:        debugging option, shows when computed data are longer than max_len
+    - show_no_answ:     debugging option, shows when the tokenized answer is empty
+    Returns:
+    - [id, input_ids, attention_mask, token_type_ids, start_token_idx, end_token_idx, offset]: if the computation is successfull
+    - ["","","","","","",""]: if the computation went wrong
+    '''
     id = record["id"]
     title = record["title"]
     context = record["context"]
@@ -150,7 +176,7 @@ def process_train_record(record, tokenizer, max_len, show_oub = False, show_bast
 
     # change questions where input_ids would be > max_len
     if max_len - len(tokenized_question.input_ids) - len(tokenized_context.input_ids) < 0:
-
+        
         # Consider only the context part that has more influence on the answer 
         answer_len = end_token_idx - start_token_idx
         remain_space = max_len - len(tokenized_question.input_ids) - answer_len
@@ -175,7 +201,7 @@ def process_train_record(record, tokenizer, max_len, show_oub = False, show_bast
     # Pad and create attention masks.
     # Skip if truncation is needed
     padding_length = max_len - len(input_ids)
-    if padding_length > 0:  # pad
+    if padding_length > 0:  
         input_ids = input_ids + ([0] * padding_length)
         attention_mask = attention_mask + ([0] * padding_length)
         token_type_ids = token_type_ids + ([0] * padding_length)
@@ -188,7 +214,33 @@ def process_train_record(record, tokenizer, max_len, show_oub = False, show_bast
 
     return [id, title, input_ids, attention_mask, token_type_ids, start_token_idx, end_token_idx, offsets]
 
+
+
 def process_dataset(df, tokenizer, answer_available=True, max_len=512):
+    '''
+    Function that processes the whole dataset changing the proceduere based on the presence of answers in the dataset
+    params:
+    - df: the dataframe
+    - tokenizer: the tokenizer specific for the bert model used
+    - answer_available: True if the answer is in the dataset False if it is not
+    - max_len: maximum length accepted by the dataset
+    returns:
+    - if answer_available=True a dataframe with columns    ["id" (index),
+                                                            "title", 
+                                                            "input_ids", 
+                                                            "attention_mask", 
+                                                            "token_type_ids", 
+                                                            "start_token_idx", 
+                                                            "end_token_idx", 
+                                                            "offsets"] 
+    - if answer_available=True a dataframe with columns    ["id" (index),
+                                                            "title", 
+                                                            "input_ids", 
+                                                            "attention_mask", 
+                                                            "token_type_ids", 
+                                                            "offsets"]
+    
+    '''
     if answer_available:
         tmp = [process_train_record(record, tokenizer, max_len) for _, record in df.iterrows()]    
         columns = ["id","title", "input_ids", "attention_mask", "token_type_ids", "start_token_idx", "end_token_idx", "offsets"]
@@ -210,10 +262,10 @@ def train_test_split_on_title(df, split_val=0.75):
     And then prepares these dataset for the model fit functions
 
     Return:
-     - train_x  <-- "input_ids", "token_type_ids", "attention_mask"
-     - train_y  <-- "start_token_idx", "end_token_idx"
-     - val_x    <-- "input_ids", "token_type_ids", "attention_mask"
-     - val_y    <-- "start_token_idx", "end_token_idx"
+     - train_x: "input_ids", "token_type_ids", "attention_mask"
+     - train_y: "start_token_idx", "end_token_idx"
+     - val_x:   "input_ids", "token_type_ids", "attention_mask"
+     - val_y:   "start_token_idx", "end_token_idx"
     """
     r_df = df.reset_index()
 
@@ -228,6 +280,26 @@ def train_test_split_on_title(df, split_val=0.75):
     return train_x, train_y, val_x, val_y
 
 def dataframe_to_array(df, answer_available = True):
+    """
+    Transforms a Dataframe into a lists of np.array
+    params:
+    - df:   dataframe with the form    ["input_ids", 
+                                        "token_type_ids", 
+                                        "attention_mask", 
+                                        "start_token_idx", 
+                                        "end_token_idx"] 
+            if answe_available=True
+            
+            dataframe with the form    ["input_ids", 
+                                        "token_type_ids", 
+                                        "attention_mask"] 
+            if answe_available=True
+    - answer_available: True if the answer is in the dataset False if it is not
+
+    returns:
+    - df_x:     list containing the columns "input_ids", "token_type_ids", "attention_mask", as np.array
+    - df_y:     if answer_available = True. List containing the columns "start_token_idx", "end_token_idx"
+    """
     df_list = df.to_dict(orient='list')
     x_set = ["input_ids", "token_type_ids", "attention_mask"]
     if answer_available:

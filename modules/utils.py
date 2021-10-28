@@ -15,7 +15,14 @@ from modules.dataframe_tools import *
 
 
 def create_df(path_to_json, errors):
-    # Parse the Json File and create a DataFrame with "title" - "context" - "question" - "id" - "answer_text" - "idx_start"
+    ''' 
+    Parses the Json File and create a DataFrame with "title" - "context" - "question" - "id" - "answer_text" - "idx_start"
+    params:
+    - path_to_json: path to the dataset file. It needs to be in a json format
+    - errors: list of dataset's ids that contain errors and that wont be considered
+    returns:
+    - dataFrame object containing the dataset 
+    '''
     with open(path_to_json) as f:
         json_txt = json.load(f)
 
@@ -39,8 +46,14 @@ def create_df(path_to_json, errors):
     return df
 
 def print_prediction(id, record, question, true_answer):
-    # TODO: check if the next line is still needed
-
+    '''
+    Print to console the formatted prediction with relative informations
+    params: 
+    - id: answer id
+    - record: a dataframe/dictionary with columns/keys: ["pred_start", "pred_end", "context", "offsets"]
+    - question: a string containing the question
+    - answer: a string containing the true answer as reported in the dataset
+    '''
     start = record["pred_start"]
     end = record["pred_end"]
     context = record["context"]
@@ -54,12 +67,20 @@ def print_prediction(id, record, question, true_answer):
     print("==============================================================\n\n")
 
 
-def get_errors(path = "/content/drive/MyDrive/NLP/proj finale/utils/errors.txt"):
+def get_errors(path = ""):
+    '''opens the file contatining the errors and returns a list of indexes '''
     with open(path, "r") as err:
         e = err.readlines()
     return [el.strip() for el in e]
 
 def index_to_text(record):
+    '''
+    Transform the token index in the corresponding string in the context:
+    params: 
+    - record: a dataframe/dictionary with columns/keys: ["pred_start", "pred_end", "context", "offsets"]
+    returns: 
+    - String containing the referred part of context
+    '''
     start_token = record["pred_start"]
     end_token = record["pred_end"]
     context = record["context"]
@@ -69,6 +90,11 @@ def index_to_text(record):
     return context[start_char:end_char]
 
 def write_prediction(df, output_file):
+    '''
+    Write the prediction on files 
+    params: a dataframe/dictionary with columns/keys: ["pred_start", "pred_end", "context", "offsets"]
+    - 
+    '''
     d = {}
     for i, row in df.iterrows():
         d[i] = index_to_text(row)

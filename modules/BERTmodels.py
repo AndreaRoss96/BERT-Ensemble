@@ -10,16 +10,29 @@ from transformers import TFAutoModel
 
 def pred_argmax(prediction):
     """
-    prediction : touple of lists
+    Computes the argmax of a list prediction
+    param:
+    - prediction: list of predictions 
+    returns:
+    - [start, end]: pair of np.array. 
+          start:  list of max arg in the prediction[0] param
+          end:    list of max arg in the prediction[1] param
     """
     starts = []
     ends = []
     for start_preds, end_preds in zip(prediction[0],prediction[1]):
-      starts.append(np.argmax(start_preds))
-      ends.append(np.argmax(end_preds))
+        starts.append(np.argmax(start_preds))
+        ends.append(np.argmax(end_preds))
     return [np.array(starts),np.array(ends)]
 
 def create_bert_CNN(model_name = 'bert-base-uncased', max_len = 512, inputs=[]):
+    '''
+    Creates a bert with a CNN on top
+    param: 
+    - model_name: base bert model name as listed in the official documentation
+    - max_len: max lenght supported by the BERT model, default is maximum length 
+    - inputs: list of inputs layers
+    '''
     ## BERT encoder
     encoder = TFAutoModel.from_pretrained(model_name)
 
@@ -47,6 +60,13 @@ def create_bert_CNN(model_name = 'bert-base-uncased', max_len = 512, inputs=[]):
     return model
 
 def create_bert_vanilla(model_name = 'bert-base-uncased', max_len = 512, inputs=[]):
+    '''
+    Creates a bert with a CNN on top
+    param: 
+    - model_name: base bert model name as listed in the official documentation
+    - max_len: max lenght supported by the BERT model, default is maximum length 
+    - inputs: list of inputs layers
+    '''
     ## BERT encoder
     encoder = TFAutoModel.from_pretrained(model_name)
 
@@ -72,9 +92,17 @@ def create_bert_vanilla(model_name = 'bert-base-uncased', max_len = 512, inputs=
     return model
 
 def create_bert_custom(model_name = 'bert-base-uncased', max_len = 512, custom_layer="regular", dropout=True, inputs=[]):
-
+  '''
+    Creates a bert with a CNN on top
+    param: 
+    - model_name: base bert model name as listed in the official documentation
+    - max_len: max lenght supported by the BERT model, default is maximum length 
+    - custom_layer: name of the last layer from the layer_option keys
+    - droput: dropout value for the fully connected layers
+    - inputs: list of inputs layers
+    '''
+    
   layer_options = {
-    "concatenate" : layers.Concatenate(),
     "average" : layers.Average,
     "maximum" : layers.Maximum,
     "minimum" : layers.Minimum,
@@ -118,8 +146,16 @@ def create_bert_custom(model_name = 'bert-base-uncased', max_len = 512, custom_l
   return model
 
 class EnsembleModel:
-  # https://towardsdatascience.com/ensembling-convnets-using-keras-237d429157eb
-  def __init__(self, models = [], inputs = []):
+  '''
+  Class that creates an ensemble model 
+  '''
+  def __init__(self, models, inputs = []):
+    '''
+    constructor of the class.
+    params:
+    - models: list of models that creates the ensamble
+    - inputs: list of inputs layer. They need to comply with the BERT standard input layers
+    '''
     outputs = [model.outputs[0] for model in models]
     self.start_probs = layers.Average()(outputs)
     outputs = [model.outputs[1] for model in models]
@@ -131,14 +167,18 @@ class EnsembleModel:
         outputs=[self.start_probs, self.end_probs],
         name='ensemble')
 
-  def predict(self, x_pred):
-    # x_pred_ensemble = [x_final for _ in range(self.input_len) for x_final in x_pred]
-    #TODO
-    # relativo a print_prediction
+  def predict(self, x):
     '''
-    Now returns a List of pairs with the structure [[start, stop], [..], ..]
+    predicts the outputs of the model.
+    params:
+    - x: input list:
+    returns
+    -List of pairs with the structure [[start, stop]]
+        start:  list of max arg in the prediction of the starting token
+        end:    list of max arg in the prediction of the ending token
+
     '''
-    pred = self.ensemble_model.predict(x_pred)
+    pred = self.ensemble_model.predict(x)
 
     return pred_argmax(pred)
 
