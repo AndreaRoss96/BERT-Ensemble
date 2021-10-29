@@ -99,7 +99,6 @@ if __name__ == '__main__':
             saved_models_path = saved_models_path,
             inputs=inputs
         )
-
         model = EnsembleModel(models, inputs)
     elif args.model == 'vanilla' :
         # Create vanilla Bert model

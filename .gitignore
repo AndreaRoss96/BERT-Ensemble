@@ -10,7 +10,7 @@ __pycache__/
 Pipfile*
 test.json
 dataset/
-saved_models/*
+saved_models/*.hdf5
 output_*
 requirements*
 
