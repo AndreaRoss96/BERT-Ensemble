@@ -9,7 +9,6 @@ __pycache__/
 # Custom
 Pipfile*
 test.json
-dataset/
 saved_models/*.hdf5
 output_*
 requirements*
