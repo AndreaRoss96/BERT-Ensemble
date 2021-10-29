@@ -87,6 +87,9 @@ if __name__ == '__main__':
 
     inputs = [input_ids, token_type_ids, attention_mask]
 
+    # Encoder init
+    # encoder = TFAutoModel.from_pretrained(args.bert_model)
+
     if args.model == 'ensemble' :
         # if ensemble selected (default) --> create enemble model adding vanilla bert model
         models = get_models(
