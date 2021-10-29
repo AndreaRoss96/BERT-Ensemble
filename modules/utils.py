@@ -1,20 +1,10 @@
 import warnings
 warnings.filterwarnings('ignore')
-import os
-import re
 import json
-import string
-import numpy as np
-import tensorflow as tf
 import pandas as pd
-from tensorflow import keras
-from tensorflow.keras import layers
-from transformers import AutoTokenizer, TFAutoModel
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
-from modules.dataframe_tools import *
 
 
-def create_df(path_to_json, errors):
+def create_df(path_to_json, errors = []):
     ''' 
     Parses the Json File and create a DataFrame with "title" - "context" - "question" - "id" - "answer_text" - "idx_start"
     params:

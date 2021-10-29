@@ -71,7 +71,8 @@ if __name__ == '__main__':
     df_orig = create_df(path_to_json, [])
 
     #TODO remove this vvvv
-    df_orig = df_orig[:10] # <<
+    df_orig = df_orig[-758:] # <<
+
     #TODO ^^^^^^^^^^^^^^^^
     print("\nProcessing dataset ...\n")
     df = process_dataset(df_orig, tokenizer, answer_available=False, max_len=max_len)
@@ -144,7 +145,7 @@ if __name__ == '__main__':
     d= {}
     for i, row in df_res.iterrows():
         d[i] =  index_to_text(row)
-        #print_prediction(i, row, row["question"], row["true_answer"])
+        print_prediction(i, row, row["question"], row["true_answer"])
     print(d)
 
     write_prediction(df_res, args.output_json)
