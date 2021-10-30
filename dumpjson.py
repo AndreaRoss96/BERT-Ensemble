@@ -6,7 +6,9 @@ if __name__ == "__main__":
         json_txt = json.load(f)
 
     with open("answer.txt", "w") as f:
-        json.dump(json_txt["data"][1], f)
+        json.dump(json_txt["data"][-1], f)
+        
+
 
 
 df = create_df("answer.json")

@@ -84,8 +84,8 @@ def process_test_record(record, tokenizer, max_len = 512, show_bast = False ):
 
 
     # Create inputs take [CLS] and [SEP] from question
-    input_ids = tokenized_context.input_ids + tokenized_question.input_ids[interval[0]:interval[1]] 
-    token_type_ids = [0] * len(tokenized_context.input_ids) + [1] * len(tokenized_question.input_ids[interval[0]:interval[1]] )
+    input_ids = tokenized_context.input_ids[interval[0]:interval[1]]  + tokenized_question.input_ids
+    token_type_ids = [0] * len(tokenized_context[interval[0]:interval[1]].input_ids) + [1] * len(tokenized_question.input_ids )
     attention_mask = [1] * len(input_ids)
 
     
@@ -193,8 +193,8 @@ def process_train_record(record, tokenizer, max_len = 512, show_oub = False, sho
 
     # Create inputs take [CLS] and [SEP] from context
   
-    input_ids = tokenized_context.input_ids + tokenized_question.input_ids[interval[0]:interval[1]] 
-    token_type_ids = [0] * len(tokenized_context.input_ids) + [1] * len(tokenized_question.input_ids[interval[0]:interval[1]] )
+    input_ids = tokenized_context.input_ids[interval[0]:interval[1]]  + tokenized_question.input_ids
+    token_type_ids = [0] * len(tokenized_context.input_ids[interval[0]:interval[1]]) + [1] * len(tokenized_question.input_ids )
     attention_mask = [1] * len(input_ids)
 
     
