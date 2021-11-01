@@ -75,17 +75,17 @@ def process_test_record(record, tokenizer, max_len = 512, show_bast = False ):
 
     # Find start and end token index for tokens from answer
     max_ctx_space = max_len - len(tokenized_question.input_ids)
-    interval = [1,max_ctx_space]
-
+    interval = [0,max_ctx_space]
+    '''
     # change questions where input_ids would be > max_len
-    if max_len - len(tokenized_question.input_ids) - len(tokenized_context.input_ids) < 0:
+    if  len(tokenized_question.input_ids) + len(tokenized_context.input_ids) > max_len:
         # truncate the context at max_ctx_space
-        interval = [1, max_ctx_space]
-
+        interval = [0, max_ctx_space]
+    '''
 
     # Create inputs take [CLS] and [SEP] from question
-    input_ids = tokenized_context.input_ids[interval[0]:interval[1]]  + tokenized_question.input_ids
-    token_type_ids = [0] * len(tokenized_context[interval[0]:interval[1]].input_ids) + [1] * len(tokenized_question.input_ids )
+    input_ids = tokenized_context.input_ids[interval[0]:interval[1]] + tokenized_question.input_ids[1:]
+    token_type_ids = [0] * len(tokenized_context.input_ids[interval[0]:interval[1]]) + [1] * len(tokenized_question.input_ids )
     attention_mask = [1] * len(input_ids)
 
     
@@ -175,7 +175,7 @@ def process_train_record(record, tokenizer, max_len = 512, show_oub = False, sho
     interval = [1,max_ctx_space]
 
     # change questions where input_ids would be > max_len
-    if max_len - len(tokenized_question.input_ids) - len(tokenized_context.input_ids) < 0:
+    if  len(tokenized_question.input_ids) + len(tokenized_context.input_ids) > max_len:
         
         # Consider only the context part that has more influence on the answer 
         answer_len = end_token_idx - start_token_idx
@@ -193,7 +193,7 @@ def process_train_record(record, tokenizer, max_len = 512, show_oub = False, sho
 
     # Create inputs take [CLS] and [SEP] from context
   
-    input_ids = tokenized_context.input_ids[interval[0]:interval[1]]  + tokenized_question.input_ids
+    input_ids = [101] + tokenized_context.input_ids[interval[0]:interval[1]]  + tokenized_question.input_ids[1:]
     token_type_ids = [0] * len(tokenized_context.input_ids[interval[0]:interval[1]]) + [1] * len(tokenized_question.input_ids )
     attention_mask = [1] * len(input_ids)
 
@@ -211,7 +211,7 @@ def process_train_record(record, tokenizer, max_len = 512, show_oub = False, sho
             print("Contex + answer too long")
             print_error_train(id, question, context, answer, start_idx, end_idx)        
         return error_return
-
+    
     return [id, title, input_ids, attention_mask, token_type_ids, start_token_idx, end_token_idx, offsets]
 
 

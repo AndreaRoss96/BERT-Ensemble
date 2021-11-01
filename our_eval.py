@@ -5,7 +5,7 @@ from modules.metrics import *
 
 if __name__ == "__main__":
     path2="D:\\Uni\\2020-21 1 sem\\NLP\proj\\repo\BERT-ensemble\\answer.json"
-    path_to_json = "D:\\Uni\\2020-21 1 sem\\NLP\\proj\\repo\\BERT-ensemble\\pred.json"
+    path_to_json = "D:\\Uni\\2020-21 1 sem\\NLP\\proj\\repo\\BERT-ensemble\\output_0.json"
     with open(path_to_json) as f:
         pred = json.load(f)
     true = create_df(path2, [])

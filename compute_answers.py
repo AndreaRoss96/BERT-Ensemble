@@ -71,7 +71,7 @@ if __name__ == '__main__':
     df_orig = create_df(path_to_json, [])
 
     #TODO remove this vvvv
-    df_orig = df_orig[-758:] # <<
+    df_orig = df_orig[-276:] # <<
 
     #TODO ^^^^^^^^^^^^^^^^
     print("\nProcessing dataset ...\n")
