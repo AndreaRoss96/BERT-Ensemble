@@ -191,10 +191,15 @@ def process_train_record(record, tokenizer, max_len = 512, show_oub = False, sho
         if start_token_idx + remain_space/2 > max_ctx_space :
             interval = [max_ctx_space - answer_len - remain_space, max_ctx_space ]
 
+
+
+    start_token_idx = start_token_idx - interval[0] + 1
+    end_token_idx = end_token_idx - interval[0] + 1
+
     # Create inputs take [CLS] and [SEP] from context
   
     input_ids = [101] + tokenized_context.input_ids[interval[0]:interval[1]]  + tokenized_question.input_ids[1:]
-    token_type_ids = [0] * len(tokenized_context.input_ids[interval[0]:interval[1]]) + [1] * len(tokenized_question.input_ids )
+    token_type_ids = [0] * len(tokenized_context.input_ids[interval[0]:interval[1]]) + [1] * len(tokenized_question.input_ids[1:])
     attention_mask = [1] * len(input_ids)
 
     

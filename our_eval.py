@@ -8,7 +8,7 @@ if __name__ == "__main__":
     path_to_json = "D:\\Uni\\2020-21 1 sem\\NLP\\proj\\repo\\BERT-ensemble\\output_0.json"
     with open(path_to_json) as f:
         pred = json.load(f)
-    true = create_df(path2, [])
+    true = create_df_train(path2, [])
     true.set_index("id", inplace=True)
 
 

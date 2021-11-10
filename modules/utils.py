@@ -4,7 +4,7 @@ import json
 import pandas as pd
 
 
-def create_df(path_to_json, errors = []):
+def create_df_train(path_to_json, errors = [], parag_dump = 0):
     ''' 
     Parses the Json File and create a DataFrame with "title" - "context" - "question" - "id" - "answer_text" - "idx_start"
     params:
@@ -17,7 +17,38 @@ def create_df(path_to_json, errors = []):
         json_txt = json.load(f)
 
     processed = []
-    for item in json_txt["data"]:
+    for item in json_txt["data"][parag_dump:]:
+        title = item["title"]
+        for para in item["paragraphs"]:
+            context = para["context"]
+            for qa in para["qas"]:
+                if qa['id'] not in errors:
+                    record_id = qa['id']
+                    question = qa["question"]
+                    answer_text = qa["answers"][0]["text"]
+                    all_answers = [_["text"] for _ in qa["answers"]]
+                    start_char_idx = qa["answers"][0]["answer_start"]
+                    samples = [record_id, title, context, question, answer_text, start_char_idx]
+                    processed.append(samples)
+
+    columns = ["id", "title", "context", "question", "answer_text", "start_idx"]
+    df = pd.DataFrame(processed, columns=columns)
+    return df
+
+def create_df_test(path_to_json, errors = [], parag_lift = 0):
+    ''' 
+    Parses the Json File and create a DataFrame with "title" - "context" - "question" - "id" - "answer_text" - "idx_start"
+    params:
+    - path_to_json: path to the dataset file. It needs to be in a json format
+    - errors: list of dataset's ids that contain errors and that wont be considered
+    returns:
+    - dataFrame object containing the dataset 
+    '''
+    with open(path_to_json) as f:
+        json_txt = json.load(f)
+
+    processed = []
+    for item in json_txt["data"][:parag_lift]:
         title = item["title"]
         for para in item["paragraphs"]:
             context = para["context"]
