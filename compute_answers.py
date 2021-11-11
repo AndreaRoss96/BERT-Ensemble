@@ -68,10 +68,10 @@ if __name__ == '__main__':
     tokenizer = AutoTokenizer.from_pretrained(args.bert_model)
 
     # Create Data set for testing
-    df_orig = create_df(path_to_json, [])
+    df_orig = create_df_test(path_to_json, [], parag_lift=2)
 
     #TODO remove this vvvv
-    df_orig = df_orig[-276:] # <<
+    # df_orig = df_orig[-276:] # <<
 
     #TODO ^^^^^^^^^^^^^^^^
     print("\nProcessing dataset ...\n")
