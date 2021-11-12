@@ -60,8 +60,9 @@ if __name__ == '__main__':
     parser.add_argument('--model',              default='ensemble', type= str, help='type of model you want to use to compute the answers: [ensemble, vanilla, cnn]')
     parser.add_argument('--bert_model',         default='bert-base-uncased', type=str, help='BERT tokenizer model')
     parser.add_argument('--max_len',            default=512,    type=int, help='maximum len for the BERT tokenizer model')
-    parser.add_argument('--vanilla_layer',      default='true', type=str, help='use a vanilla BERT model for the ensemble')
+    parser.add_argument('--van_layer',          default='true', type=str, help='use a vanilla BERT model for the ensemble')
     parser.add_argument('--cnn_layer',          default='true', type=str, help='use an BERT model with a cnn layer for the ensemble')
+    parser.add_argument('--add_layer',          default='true', type=str, help='use an BERT model with a cnn layer for the ensemble')
     parser.add_argument('--avg_layer',          default='true', type=str, help='use an BERT model with an avg layer for the ensemble')
     parser.add_argument('--max_layer',          default='true', type=str, help='use an BERT model with a max layer for the ensemble')
     parser.add_argument('--min_layer',          default='true', type=str, help='use an BERT model with a min layer for the ensemble')
@@ -104,8 +105,8 @@ if __name__ == '__main__':
     if args.model == 'ensemble' :
         # if ensemble selected (default) --> create enemble model adding vanilla bert model
         models = get_models(
-            args.vanilla,
-            args.cnn,
+            args.van_layer,
+            args.cnn_layer,
             args.add_layer,
             args.avg_layer,
             args.max_layer,
