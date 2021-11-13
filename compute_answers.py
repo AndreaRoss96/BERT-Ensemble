@@ -155,13 +155,14 @@ if __name__ == '__main__':
     df_res = pd.DataFrame.from_dict(data)
     df_res.set_index("id", inplace=True)
 
+    write_prediction(df_res, args.output_json)
+    
+    
     d= {}
     for i, row in df_res.iterrows():
         d[i] =  index_to_text(row)
         print_prediction(i, row, row["question"], row["true_answer"])
     print(d)
-
-    write_prediction(df_res, args.output_json)
     
 
 
