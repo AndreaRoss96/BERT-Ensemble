@@ -117,7 +117,10 @@ if __name__ == '__main__':
             inputs=inputs
         )
         print(f"The ensemble model has been built with the follwing models\n{models}")
-        model = EnsembleModel(models, inputs)
+        if len(models) == 1:
+            model = models[0]
+        else :
+            model = EnsembleModel(models, inputs)
     elif args.model == 'vanilla' :
         # Create vanilla Bert model
         bert_van = create_bert_vanilla(inputs=inputs)
@@ -134,7 +137,7 @@ if __name__ == '__main__':
     print("\nPrediction in process ...\n")
     t0 = time.time() 
     pred = model.predict(x_test)
-    if args.model != 'ensemble' :
+    if args.model != 'ensemble' or len(models) == 1:
         pred = pred_argmax(pred)
 
     t1 = time.time()
