@@ -8,9 +8,8 @@ __pycache__/
 
 # Custom
 Pipfile*
-test.json
 saved_models/*.hdf5
-output_*
+# output_*
 requirements*
 
 # Distribution / packaging
