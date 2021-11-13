@@ -18,7 +18,7 @@ def get_models(vanilla, cnn, add_layer, avg_layer, max_layer, min_layer, mul_lay
         bert_vanilla.load_weights(saved_models_path + "bert-base-uncased_vanilla.hdf5")
         models.append(bert_vanilla)
     
-    if str(add_layer).lower() =='true':
+    if str(cnn).lower() =='true':
         bert_cnn = create_bert_CNN(inputs=inputs)
         bert_cnn.load_weights(saved_models_path + "bert-base-uncased_cnn.hdf5")
         models.append(bert_cnn)
