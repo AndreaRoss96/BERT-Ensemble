@@ -69,7 +69,7 @@ if __name__ == '__main__':
     parser.add_argument('--mul_layer',          default='true', type=str, help='use an BERT model with a mul layer for the ensemble')
     parser.add_argument('--sub_layer',          default='true', type=str, help='use an BERT model with a sub layer for the ensemble')
     parser.add_argument('--saved_model_path',   default='saved_models/', type=str, help='path with the models weight saved')
-    parser.add_argument('--output_json',        default='output_0.json', type= str, help='Folder with the predicted values')
+    parser.add_argument('--output_json',        default='output_0.json', type=str, help='Folder with the predicted values')
 
     args = parser.parse_args()
     path_to_json = args.path_to_json
@@ -116,6 +116,7 @@ if __name__ == '__main__':
             saved_models_path = saved_models_path,
             inputs=inputs
         )
+        print(f"The ensemble model has been built with the follwing models\n{models}")
         model = EnsembleModel(models, inputs)
     elif args.model == 'vanilla' :
         # Create vanilla Bert model
