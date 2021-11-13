@@ -121,11 +121,11 @@ if __name__ == '__main__':
     elif args.model == 'vanilla' :
         # Create vanilla Bert model
         bert_van = create_bert_vanilla(inputs=inputs)
-        bert_van.load_weights(saved_models_path + "BERT_Vanilla.hdf5")
+        bert_van.load_weights(saved_models_path + "bert-base-uncased_vanilla.hdf5")
         model = bert_van
     elif args.model == 'cnn' :
         bert_cnn = create_bert_CNN(inputs=inputs)
-        bert_cnn.load_weights(saved_models_path + "BERT_1DConv.hdf5")
+        bert_cnn.load_weights(saved_models_path + "bert-base-uncased_cnn.hdf5")
         model = bert_cnn
     else :
         raise ValueError("Check \'--model\' value: use \'ensemble\' or \'vanilla\' or \'cnn\'")
