@@ -59,15 +59,15 @@ if __name__ == '__main__':
     parser.add_argument('path_to_json',         metavar='data.json', help='Path to json testing file')
     parser.add_argument('--model',              default='ensemble', type= str, help='type of model you want to use to compute the answers: [ensemble, vanilla, cnn]')
     parser.add_argument('--bert_model',         default='bert-base-uncased', type=str, help='BERT tokenizer model')
-    parser.add_argument('--max_len',            default=512,    type=int, help='maximum len for the BERT tokenizer model')
-    parser.add_argument('--van_layer',          default='true', type=str, help='use a vanilla BERT model for the ensemble')
-    parser.add_argument('--cnn_layer',          default='true', type=str, help='use an BERT model with a cnn layer for the ensemble')
-    parser.add_argument('--add_layer',          default='true', type=str, help='use an BERT model with a cnn layer for the ensemble')
-    parser.add_argument('--avg_layer',          default='true', type=str, help='use an BERT model with an avg layer for the ensemble')
-    parser.add_argument('--max_layer',          default='true', type=str, help='use an BERT model with a max layer for the ensemble')
-    parser.add_argument('--min_layer',          default='true', type=str, help='use an BERT model with a min layer for the ensemble')
-    parser.add_argument('--mul_layer',          default='true', type=str, help='use an BERT model with a mul layer for the ensemble')
-    parser.add_argument('--sub_layer',          default='true', type=str, help='use an BERT model with a sub layer for the ensemble')
+    parser.add_argument('--max_len',            default=512,        type=int, help='maximum len for the BERT tokenizer model')
+    parser.add_argument('--van_layer',          default='true',     type=str, help='use a vanilla BERT model for the ensemble')
+    parser.add_argument('--cnn_layer',          default='true',     type=str, help='use an BERT model with a cnn layer for the ensemble')
+    parser.add_argument('--add_layer',          default='false',    type=str, help='use an BERT model with a cnn layer for the ensemble')
+    parser.add_argument('--avg_layer',          default='false',    type=str, help='use an BERT model with an avg layer for the ensemble')
+    parser.add_argument('--max_layer',          default='false',    type=str, help='use an BERT model with a max layer for the ensemble')
+    parser.add_argument('--min_layer',          default='false',    type=str, help='use an BERT model with a min layer for the ensemble')
+    parser.add_argument('--mul_layer',          default='true',     type=str, help='use an BERT model with a mul layer for the ensemble')
+    parser.add_argument('--sub_layer',          default='false',    type=str, help='use an BERT model with a sub layer for the ensemble')
     parser.add_argument('--saved_model_path',   default='saved_models/', type=str, help='path with the models weight saved')
     parser.add_argument('--output_json',        default='output_0.json', type=str, help='Folder with the predicted values')
 
@@ -117,15 +117,18 @@ if __name__ == '__main__':
             inputs=inputs
         )
         print(f"The ensemble model has been built with the follwing models\n{models}")
-        model = EnsembleModel(models, inputs)
+        if len(models) == 1:
+            model = models[0]
+        else :
+            model = EnsembleModel(models, inputs)
     elif args.model == 'vanilla' :
         # Create vanilla Bert model
         bert_van = create_bert_vanilla(inputs=inputs)
-        bert_van.load_weights(saved_models_path + "BERT_Vanilla.hdf5")
+        bert_van.load_weights(saved_models_path + "bert-base-uncased_vanilla.hdf5")
         model = bert_van
     elif args.model == 'cnn' :
         bert_cnn = create_bert_CNN(inputs=inputs)
-        bert_cnn.load_weights(saved_models_path + "BERT_1DConv.hdf5")
+        bert_cnn.load_weights(saved_models_path + "bert-base-uncased_cnn.hdf5")
         model = bert_cnn
     else :
         raise ValueError("Check \'--model\' value: use \'ensemble\' or \'vanilla\' or \'cnn\'")
@@ -134,7 +137,7 @@ if __name__ == '__main__':
     print("\nPrediction in process ...\n")
     t0 = time.time() 
     pred = model.predict(x_test)
-    if args.model != 'ensemble' :
+    if args.model != 'ensemble' or len(models) == 1:
         pred = pred_argmax(pred)
 
     t1 = time.time()
