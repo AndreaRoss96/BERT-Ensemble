@@ -8,11 +8,6 @@ if __name__ == "__main__":
     with open("answer.txt", "w") as f:
         json.dump(json_txt["data"][:2], f)
         
-
-
-
-df = create_df_train("answer.json")
-print(df)
         
 
 

@@ -81,10 +81,6 @@ if __name__ == '__main__':
     # Create Data set for testing
     df_orig = create_df_test(path_to_json, [], parag_lift=2)
 
-    #TODO remove this vvvv
-    # df_orig = df_orig[-276:] # <<
-
-    #TODO ^^^^^^^^^^^^^^^^
     print("\nProcessing dataset ...\n")
     df = process_dataset(df_orig, tokenizer, answer_available=False, max_len=max_len)
     print(f'processed dataframe=\n{df}\n')
