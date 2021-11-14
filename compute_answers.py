@@ -62,7 +62,7 @@ if __name__ == '__main__':
     parser.add_argument('--max_len',            default=512,        type=int, help='maximum len for the BERT tokenizer model')
     parser.add_argument('--van_layer',          default='true',     type=str, help='use a vanilla BERT model for the ensemble')
     parser.add_argument('--cnn_layer',          default='true',     type=str, help='use an BERT model with a cnn layer for the ensemble')
-    parser.add_argument('--add_layer',          default='false',    type=str, help='use an BERT model with a cnn layer for the ensemble')
+    parser.add_argument('--add_layer',          default='false',    type=str, help='use an BERT model with a add layer for the ensemble')
     parser.add_argument('--avg_layer',          default='false',    type=str, help='use an BERT model with an avg layer for the ensemble')
     parser.add_argument('--max_layer',          default='false',    type=str, help='use an BERT model with a max layer for the ensemble')
     parser.add_argument('--min_layer',          default='false',    type=str, help='use an BERT model with a min layer for the ensemble')
