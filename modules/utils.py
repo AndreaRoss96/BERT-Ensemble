@@ -10,6 +10,7 @@ def create_df_train(path_to_json, errors = [], parag_dump = 0):
     params:
     - path_to_json: path to the dataset file. It needs to be in a json format
     - errors: list of dataset's ids that contain errors and that wont be considered
+    - parag_dump: number of initial paragraph to leave as training set
     returns:
     - dataFrame object containing the dataset 
     '''
@@ -35,12 +36,14 @@ def create_df_train(path_to_json, errors = [], parag_dump = 0):
     df = pd.DataFrame(processed, columns=columns)
     return df
 
-def create_df_test(path_to_json, errors = [], parag_lift = 0):
+def create_df_test(path_to_json, errors = [], parag_lift = 0, answer_available = False):
     ''' 
     Parses the Json File and create a DataFrame with "title" - "context" - "question" - "id" - "answer_text" - "idx_start"
     params:
     - path_to_json: path to the dataset file. It needs to be in a json format
     - errors: list of dataset's ids that contain errors and that wont be considered
+    - parag_lift: number of paragraph to consider
+    - answer_available: if the answer are available in the dataset
     returns:
     - dataFrame object containing the dataset 
     '''
@@ -56,15 +59,61 @@ def create_df_test(path_to_json, errors = [], parag_lift = 0):
                 if qa['id'] not in errors:
                     record_id = qa['id']
                     question = qa["question"]
-                    answer_text = qa["answers"][0]["text"]
-                    all_answers = [_["text"] for _ in qa["answers"]]
-                    start_char_idx = qa["answers"][0]["answer_start"]
-                    samples = [record_id, title, context, question, answer_text, start_char_idx]
+                    if answer_available:
+                        answer_text = qa["answers"][0]["text"]
+                        all_answers = [_["text"] for _ in qa["answers"]]
+                        start_char_idx = qa["answers"][0]["answer_start"]
+                        samples = [record_id, title, context, question, answer_text, start_char_idx]
+                    else:
+                        samples = [record_id, title, context, question]
                     processed.append(samples)
 
-    columns = ["id", "title", "context", "question", "answer_text", "start_idx"]
+    if answer_available:
+        columns = ["id", "title", "context", "question", "answer_text", "start_idx"]
+    else:
+        columns = ["id", "title", "context", "question"]
     df = pd.DataFrame(processed, columns=columns)
     return df
+
+def create_df(path_to_json, errors = [], answer_available = False):
+    ''' 
+    Parses the Json File and create a DataFrame with "title" - "context" - "question" - "id" - "answer_text" - "idx_start"
+    params:
+    - path_to_json: path to the dataset file. It needs to be in a json format
+    - errors: list of dataset's ids that contain errors and that wont be considered
+    - parag_lift: number of paragraph to consider
+    - answer_available: if the answer are available in the dataset
+    returns:
+    - dataFrame object containing the dataset 
+    '''
+    with open(path_to_json) as f:
+        json_txt = json.load(f)
+
+    processed = []
+    for item in json_txt["data"][:]:
+        title = item["title"]
+        for para in item["paragraphs"]:
+            context = para["context"]
+            for qa in para["qas"]:
+                if qa['id'] not in errors:
+                    record_id = qa['id']
+                    question = qa["question"]
+                    if answer_available:
+                        answer_text = qa["answers"][0]["text"]
+                        all_answers = [_["text"] for _ in qa["answers"]]
+                        start_char_idx = qa["answers"][0]["answer_start"]
+                        samples = [record_id, title, context, question, answer_text, start_char_idx]
+                    else:
+                        samples = [record_id, title, context, question]
+                    processed.append(samples)
+
+    if answer_available:
+        columns = ["id", "title", "context", "question", "answer_text", "start_idx"]
+    else:
+        columns = ["id", "title", "context", "question"]
+    df = pd.DataFrame(processed, columns=columns)
+    return df
+
 
 def print_prediction(id, record, question, true_answer):
     '''

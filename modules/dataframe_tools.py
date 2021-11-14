@@ -6,7 +6,7 @@ import numpy as np
 import tensorflow as tf
 import pandas as pd
 from tensorflow import keras
-#from transformers import AutoTokenizer, TFAutoModel
+from transformers import AutoTokenizer, TFAutoModel
 from modules.utils import *
 
 
@@ -53,9 +53,10 @@ def process_test_record(record, tokenizer, max_len = 512, show_bast = False ):
     - max_len:      maximum length accepted by the BERT model.
     - show_bast:    debugging option, shows when computed data are longer than max_len
     Returns:
-    - [id, input_ids, attention_mask, token_type_ids, offset]: if the computation is successfull
+    - [id, title, input_ids, attention_mask, token_type_ids, offset]: if the computation is successfull
     - ["","","","","",""]: if the computation went wrong
     '''
+    
     id = record["id"]
     title = record["title"]
     context = record["context"]

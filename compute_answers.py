@@ -79,7 +79,7 @@ if __name__ == '__main__':
     tokenizer = AutoTokenizer.from_pretrained(args.bert_model)
 
     # Create Data set for testing
-    df_orig = create_df_test(path_to_json, [], parag_lift=2)
+    df_orig = create_df(path_to_json, [], answer_available=False)
 
     print("\nProcessing dataset ...\n")
     df = process_dataset(df_orig, tokenizer, answer_available=False, max_len=max_len)
@@ -157,7 +157,7 @@ if __name__ == '__main__':
 
     write_prediction(df_res, args.output_json)
     
-    
+    '''
     d= {}
     for i, row in df_res.iterrows():
         d[i] =  index_to_text(row)
@@ -165,4 +165,4 @@ if __name__ == '__main__':
     print(d)
     
 
-
+    '''
