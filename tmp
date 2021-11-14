@@ -1,0 +1,19 @@
+question:           In what year did Beyonce embark on her Dangerously in Love tour of Europe?
+true_answer:        November 2003
+output_6Mod:        2003
+output_8Mod:        2003
+output_CNN:         2003
+output_Multiply:    2003
+output_Vanilla:     2003
+output_VC:          2003
+output_VCM:         2003
+
+
+true_answer:        the 2008 World Music Awards
+output_6Mod:        2008 World Music Awards
+output_8Mod:        2008 World Music Awards
+output_CNN:         2008
+output_Multiply:    2008 World Music Awards
+output_Vanilla:     2008 World Music Awards
+output_VC:          2008
+output_VCM:         2008 World Music Awards
