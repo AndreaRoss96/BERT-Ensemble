@@ -83,9 +83,7 @@ if __name__ == '__main__':
 
     print("\nProcessing dataset ...\n")
     df = process_dataset(df_orig, tokenizer, answer_available=False, max_len=max_len)
-    print(f'processed dataframe=\n{df}\n')
     x_test = dataframe_to_array(df, answer_available = False)
-    print(f'x_test=\n{x_test}\n')
     print("\nProceding to create models ...\n")
 
     # Create input layer for the neural networks
@@ -94,9 +92,6 @@ if __name__ == '__main__':
     attention_mask = layers.Input(shape=(max_len,), dtype=tf.int32, name="attention_mask")
 
     inputs = [input_ids, token_type_ids, attention_mask]
-
-    # Encoder init
-    # encoder = TFAutoModel.from_pretrained(args.bert_model)
 
     if args.model == 'ensemble' :
         # if ensemble selected (default) --> create enemble model adding vanilla bert model
@@ -112,7 +107,6 @@ if __name__ == '__main__':
             saved_models_path = saved_models_path,
             inputs=inputs
         )
-        print(f"The ensemble model has been built with the follwing models\n{models}")
         if len(models) == 1:
             model = models[0]
         else :
@@ -129,7 +123,6 @@ if __name__ == '__main__':
     else :
         raise ValueError("Check \'--model\' value: use \'ensemble\' or \'vanilla\' or \'cnn\'")
     
-    print(x_test)
     print("\nPrediction in process ...\n")
     t0 = time.time() 
     pred = model.predict(x_test)
@@ -138,8 +131,6 @@ if __name__ == '__main__':
 
     t1 = time.time()
     print(f"the prediction process took {t1-t0} seconds\n")  
-
-    print(f"the predictions are:\n {pred[0]}\n {pred[1]}")
     
     data = {
         "id" : df_orig.id.values,
@@ -157,12 +148,3 @@ if __name__ == '__main__':
 
     write_prediction(df_res, args.output_json)
     
-    '''
-    d= {}
-    for i, row in df_res.iterrows():
-        d[i] =  index_to_text(row)
-        print_prediction(i, row, row["question"], row["true_answer"])
-    print(d)
-    
-
-    '''

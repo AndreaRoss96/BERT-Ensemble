@@ -129,12 +129,11 @@ def create_bert_custom(model_name = 'bert-base-uncased', max_len = 512, custom_l
   int_logits = layers.Flatten(name = 'flatten_int' + '_' + custom_layer)(int_logits)
 
 
-  ####
   if custom_layer.lower() in layer_options:
     end_logits = layer_options[custom_layer.lower()]()([start_logits, int_logits])
   else:
     end_logits = int_logits
-  ####
+
 
   start_probs = layers.Activation(keras.activations.softmax, name = 'start_pred' + '_' + custom_layer)(start_logits)
   end_probs = layers.Activation(keras.activations.softmax, name = 'end_pred' + '_' + custom_layer)(end_logits)

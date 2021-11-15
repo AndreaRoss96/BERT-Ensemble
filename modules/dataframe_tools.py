@@ -77,12 +77,6 @@ def process_test_record(record, tokenizer, max_len = 512, show_bast = False ):
     # Find start and end token index for tokens from answer
     max_ctx_space = max_len - len(tokenized_question.input_ids)
     interval = [0,max_ctx_space]
-    '''
-    # change questions where input_ids would be > max_len
-    if  len(tokenized_question.input_ids) + len(tokenized_context.input_ids) > max_len:
-        # truncate the context at max_ctx_space
-        interval = [0, max_ctx_space]
-    '''
 
     # Create inputs take [CLS] and [SEP] from question
     input_ids = tokenized_context.input_ids[interval[0]:interval[1]] + tokenized_question.input_ids[1:]
