@@ -1,5 +1,5 @@
 # BERT-ensemble
-To run compute_answer.py you have to follow this steps:
+To run compute_answer.py you need to follow these steps:
 - Download the model's weights from this link and save them in the folder _saved_models_ 
     - To run the default model (ensemble VCM) you only need the files called  _bert-base-uncased_vanilla_, _bert-base-uncased_cnn_ and _bert-base-uncased_multiply_
 - Run compute answer as 
@@ -9,20 +9,20 @@ python3 compute_answers.py *path_to_json_file*
 
 
 Compute answer has some optional flag:
---path_to_json --> specify the path for the json file.
---bert_model --> specify the BERT model to use. Note that the default model is _bert_based_uncased_ and that the saved weight refer to this implementation.
---model --> specify the model to be run, the possible options are: _vanilla_, _cnn_, _ensemble_. 
---max_len --> specify the max length of the BERT model. Note that the default length is 512 and teh saved weight use this length.
---van_layer --> use a vanilla BERT model for the ensemble.
---cnn_layer --> use an BERT model with a cnn layer for the ensemble.
---add_layer --> use an BERT model with an add layer for the ensemble.
---avg_layer --> use an BERT model with an avg layer for the ensemble.
---max_layer --> use an BERT model with an max layer for the ensemble.
---min_layer --> use an BERT model with a min layer for the ensemble.
---mul_layer --> use an BERT model with a mul layer for the ensemble.
---sub_layer --> use an BERT model with a sub layer for the ensemble.
---saved_model_path --> path to the saved models. Default is _saved_models/_.
---output_json --> Folder with the predicted values and name of the prediction file.
+* ```--path_to_json ``` &rarr; specify the path for the json file.
+* ```--bert_model ``` &rarr; specify the BERT model to use. Note that the default model is _bert_based_uncased_ and that the saved weight refer to this implementation.
+* ```--model ``` &rarr; specify the model to be run, the possible options are: _vanilla_, _cnn_, _ensemble_. 
+* ```--max_len ``` &rarr; specify the max length of the BERT model. Note that the default length is 512 and teh saved weight use this length.
+* ```--van_layer ``` &rarr; use a vanilla BERT model for the ensemble.
+* ```--cnn_layer ``` &rarr; use an BERT model with a cnn layer for the ensemble.
+* ```--add_layer ``` &rarr; use an BERT model with an add layer for the ensemble.
+* ```--avg_layer ``` &rarr; use an BERT model with an avg layer for the ensemble.
+* ```--max_layer ``` &rarr; use an BERT model with an max layer for the ensemble.
+* ```--min_layer ``` &rarr; use an BERT model with a min layer for the ensemble.
+* ```--mul_layer ``` &rarr; use an BERT model with a mul layer for the ensemble.
+* ```--sub_layer ``` &rarr; use an BERT model with a sub layer for the ensemble.
+* ```--saved_model_path ``` &rarr; path to the saved models. Default is _saved_models/_.
+* ```--output_json ``` &rarr; Folder with the predicted values and name of the prediction file.
 
 
 The full experiment can be found at this link. The repository follows this structure
