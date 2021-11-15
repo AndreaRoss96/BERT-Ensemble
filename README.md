@@ -1,6 +1,6 @@
 # BERT-ensemble
 To run compute_answer.py you need to follow these steps:
-- Download the model's weights from this link and save them in the folder _saved_models_ 
+- Download the model's weights from this [link](https://liveunibo-my.sharepoint.com/:f:/g/personal/filippo_orazi_studio_unibo_it/EqKufBDXOoNEhFs5W1ojlgsBF0074Uesdu6G7t9jhz7Zjw?e=uw6gqG) and save them in the folder _saved_models_ 
     - To run the default model (ensemble VCM) you only need the files called  _bert-base-uncased_vanilla_, _bert-base-uncased_cnn_ and _bert-base-uncased_multiply_
 - Run compute answer as 
 ```
@@ -25,7 +25,7 @@ Compute answer has some optional flag:
 * ```--output_json ``` &rarr; Folder with the predicted values and name of the prediction file.
 
 
-The full experiment can be found at this link. The repository follows this structure
+The full experiment can be found at this [link](https://github.com/filorazi/BERT-ensemble). The repository follows this structure
 - dataset: Folder that contains the dataset
 - modules: Folder that contains utility modules:
     - BERTmodels.py: contains the function that returned the models considered
