@@ -7,7 +7,7 @@ To run compute_answer.py you need to follow these steps:
 python3 compute_answers.py *path_to_json_file*
 ```
 
-
+## Compute answer functionalities
 Compute answer has some optional flag:
 * ```--path_to_json ``` &rarr; specify the path for the json file.
 * ```--bert_model ``` &rarr; specify the BERT model to use. Note that the default model is _bert_based_uncased_ and that the saved weight refer to this implementation.
@@ -24,7 +24,7 @@ Compute answer has some optional flag:
 * ```--saved_model_path ``` &rarr; path to the saved models. Default is _saved_models/_.
 * ```--output_json ``` &rarr; Folder with the predicted values and name of the prediction file.
 
-
+## BERT-ENSEMBLE repository description
 The full experiment can be found at this [link](https://github.com/filorazi/BERT-ensemble). The repository follows this structure
 - dataset: Folder that contains the dataset
 - modules: Folder that contains utility modules:
