@@ -8,6 +8,13 @@ python3 compute_answers.py *path_to_json_file*
 ```
 Be aware that the execution on linux might cause a character encoding issue.
 
+### Requirements:
+* tensorflow
+* transformers
+* keras
+* pandas
+* numpy
+
 ## Compute answer functionalities
 Compute answer has some optional flag:
 * ```--path_to_json ``` &rarr; specify the path for the json file.
